@@ -1,0 +1,31 @@
+MAIN POINTS:
+Wykrywanie pkt charakterystyczych i odczytywac mruganie
+    - wykrywanie na podstawie facemesh EAR + policzki itd
+    - Uwzględnic przymruzenie oczu
+    - 1 oko czy oba akceptowac
+    - Odpornosc na zaklocenia
+    - przypadki brzegowe
+Kod morsea
+    - Zakresy kropki i kreski
+    - Jak zrobic spacje
+
+
+ETAP 2
+- Prototyp
+- Przeanalizowac przypadki brzegowe
+    - roznice w oswietleniu
+    - rozdzielczosc
+    - okluzje
+- Przygotowanie danych testowych i sprawdzenie dzialania - dla zdjec pewnie
+
+
+ETAP 2 TODO: UZUPELNIC TODO
+Prompt:
+Tworze aplikacje z wykorzystaniem openCV i mediapipe do wykrycia mrugania w roznych warunkach oswietlenia. Powiedz mi jak przed zebraniem danych z kamery powinienem je przygotowac. Nastepnie napisz mi program na bazie wyslanego, aby nakladal facemesh na twarz i wyswietlal kiedy jest mruganie.
+
+- Jak przygotowac dane
+    - CLAHE -> Korekcja Gamma -> Redukcja szumow -> Normalizacja jasnosci
+
+
+- Odczytanie kamery i wyswietlenie facemesh
+- Odczytanie mrugania - na ekranie napis
