@@ -1,4 +1,4 @@
-MAIN POINTS:
+ETAP 1 PODSUMOWANIE ZAJEC:
 Wykrywanie pkt charakterystyczych i odczytywac mruganie
     - wykrywanie na podstawie facemesh EAR + policzki itd
     - Uwzględnic przymruzenie oczu
@@ -10,7 +10,7 @@ Kod morsea
     - Jak zrobic spacje
 
 
-ETAP 2
+ETAP 2 WYMAGANIA:
 - Prototyp
 - Przeanalizowac przypadki brzegowe
     - roznice w oswietleniu
@@ -19,13 +19,16 @@ ETAP 2
 - Przygotowanie danych testowych i sprawdzenie dzialania - dla zdjec pewnie
 
 
-ETAP 2 TODO: UZUPELNIC TODO
-Prompt:
-Tworze aplikacje z wykorzystaniem openCV i mediapipe do wykrycia mrugania w roznych warunkach oswietlenia. Powiedz mi jak przed zebraniem danych z kamery powinienem je przygotowac. Nastepnie napisz mi program na bazie wyslanego, aby nakladal facemesh na twarz i wyswietlal kiedy jest mruganie.
-
-- Jak przygotowac dane
-    - CLAHE -> Korekcja Gamma -> Redukcja szumow -> Normalizacja jasnosci
-
-
-- Odczytanie kamery i wyswietlenie facemesh
-- Odczytanie mrugania - na ekranie napis
+ETAP 2
+1. Poprawna implementacja EAR - zeby nie bylo zalezne od odleglosci od kamery. Normalizacja
+    odleglosci miedzy jakims punktem.
+2. Wykorzystanie dodatkowych punktow z face_mesh do stabilizacji detekcji (np. policzki)
+3. Odpornosc na zmiany oswietlenia - korekcja gamma, CLAHE, redukcja szumow, normalizacja jasnosci.
+    Opcja wlaczenia i wylaczenia do testow w konfigu.
+4. Okluzje - weryfikacja czy twarz w ogole istnieje/jest wykryta. Dodac wykrywanie dla 1 osoby.
+    Wykrywanie mrugania dla 1/2 oczu?
+5. Analizowac predkosc zmiany EAR - czy mruganie czy mruzenie - szybka zmiana mrugniecie + te policzki.
+6. Obsluga usuwania znaku
+7. Duza rozbudowa UI - EAR, czas zamkniecia, pokazanie czy otworzone, opcja facemesha widocznego
+8. Test
+    - zapis obrazu kamery z przycisku z etykieta np. klawisz o - zapis z open, p - closed
