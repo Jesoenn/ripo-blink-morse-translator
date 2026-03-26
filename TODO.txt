@@ -32,3 +32,20 @@ ETAP 2 (14.04)
 7. Duza rozbudowa UI - EAR, czas zamkniecia, pokazanie czy otworzone, opcja facemesha widocznego
 8. Test
     - zapis obrazu kamery z przycisku z etykieta np. klawisz o - zapis z open, p - closed
+
+ETAP 2 JEGO PUNKTY
+1. Zebranie zestawu danych - warunki brzegowe (oswietlenie/rozdzielczosc/okluzje)
+2. Zbadac przygotowanie obrazu na skutecznosc wyniku
+Sprawdzic czy mediapipe RGB/hSV
+odszumianie filtr gaussa, wyrownanie histogramu 
+3. Mierzalne predyckej
+4. zmierzenie poprawnosci
+
+
+
+
+
+
+
+
+
