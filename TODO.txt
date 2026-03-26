@@ -1,4 +1,4 @@
-ETAP 1 PODSUMOWANIE ZAJEC:
+ETAP 1 PODSUMOWANIE ZAJEC: 
 Wykrywanie pkt charakterystyczych i odczytywac mruganie
     - wykrywanie na podstawie facemesh EAR + policzki itd
     - Uwzględnic przymruzenie oczu
@@ -19,7 +19,7 @@ ETAP 2 WYMAGANIA:
 - Przygotowanie danych testowych i sprawdzenie dzialania - dla zdjec pewnie
 
 
-ETAP 2
+ETAP 2 (14.04)
 1. Poprawna implementacja EAR - zeby nie bylo zalezne od odleglosci od kamery. Normalizacja
     odleglosci miedzy jakims punktem.
 2. Wykorzystanie dodatkowych punktow z face_mesh do stabilizacji detekcji (np. policzki)
