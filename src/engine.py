@@ -11,11 +11,49 @@ class MorseEngine:
         self.last_state_change = time.time()
         self.pause_processed = True
 
-    def update(self, ear):
+        self.left_ear_history = []
+        self.current_left_ear = 0.0
+        self.average_left_ear = 0.0
+        self.left_eye_closed = False
+
+        self.right_ear_history = []
+        self.current_right_ear = 0.0
+        self.average_right_ear = 0.0
+        self.right_eye_closed = False
+
+    # Use 3 recent values to calculate average EAR for left eye
+    def update_left_ear_average(self, ear):
+        self.current_left_ear = ear
+        self.left_ear_history.append(ear)
+
+        if len(self.left_ear_history) > 3:
+            self.left_ear_history.pop(0)
+
+        self.average_left_ear = sum(self.left_ear_history) / len(self.left_ear_history)
+
+    # Use 3 recent values to calculate average EAR for right eye
+    def update_right_ear_average(self, ear):
+        self.current_right_ear = ear
+        self.right_ear_history.append(ear)
+
+        if len(self.right_ear_history) > 3:
+            self.right_ear_history.pop(0)
+
+        self.average_right_ear = sum(self.right_ear_history) / len(self.right_ear_history)
+
+    def update(self, left_ear, right_ear):
+        self.update_left_ear_average(left_ear)
+        self.update_right_ear_average(right_ear)
+
         now = time.time()
         duration = now - self.last_state_change
 
-        if ear < config.BLINK_THRESHOLD:
+        left_closed = self.average_left_ear < config.BLINK_THRESHOLD
+        right_closed = self.average_right_ear < config.BLINK_THRESHOLD
+
+        both_eyes_closed = left_closed and right_closed
+
+        if both_eyes_closed:
             if not self.is_eye_closed:
                 self.is_eye_closed = True
                 self.last_state_change = now

@@ -3,6 +3,24 @@
 # ========================================
 SHOW_POSTPROCESSING_PLOT = False
 
+ENABLE_GAMMA_CORRECTION = False
+GAMMA_VALUE = 1.4  # > 1.0 brightens, < 1.0 darkens
+
+ENABLE_CLAHE = True # Contrast Limited Adaptive Histogram Equalization
+CLAHE_CLIP_LIMIT = 3.0
+CLAHE_TILE_GRID = (8, 8)
+
+ENABLE_NOISE_REDUCTION = False
+
+ENABLE_BRIGHTNESS_NORMALIZATION = True
+BRIGHTNESS_TARGET = 50
+
+# ========================================
+# Camera display
+# ========================================
+SHOW_FACEMESH = True
+SHOW_PROCESSED_FACE = True
+
 # ========================================
 # engine.py
 # MorseEngine - translate blinks to symbols
@@ -30,8 +48,8 @@ COLOR_SEQ = (255, 255, 0)      # Yellow
 COLOR_TEXT = (255, 255, 255)   # White
 
 POS_EAR = (20, 40)
-POS_SEQ = (20, 90)
-POS_TEXT = (20, 150)
+POS_SEQ = (20, 130)
+POS_TEXT = (20, 170)
 
 # Fonts
 FONT_SCALE_SMALL = 0.8

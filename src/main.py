@@ -3,6 +3,7 @@ from image_utils import enhance_frame
 from detector import EyeDetector
 from engine import MorseEngine
 from ui import UI
+import config
 
 
 def main():
@@ -29,13 +30,24 @@ def main():
 
         if results.multi_face_landmarks:
             landmarks = results.multi_face_landmarks[0].landmark
-            ear = detector.calculate_ear(landmarks, w, h)
+            left_ear, right_ear = detector.calculate_ear_both_eyes(landmarks, w, h)
 
-            # 3. Check if blink based on ear
-            engine.update(ear)
+            # 3. Check if blink based on ear and mouth stability
+            engine.update(left_ear, right_ear)
+
+
+
+
 
         # 4. Render
-        ui.render(frame, ear, engine)
+        if config.SHOW_PROCESSED_FACE:
+            if config.SHOW_FACEMESH:
+                detector.draw_facemesh(processed, results)
+            ui.render(processed, engine)
+        else:
+            if config.SHOW_FACEMESH:
+                detector.draw_facemesh(frame, results)
+            ui.render(frame, engine)
 
         # Exit - ESC
         if cv2.waitKey(1) & 0xFF == 27:

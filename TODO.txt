@@ -23,10 +23,6 @@ ETAP 2 (14.04)
 1. Poprawna implementacja EAR - zeby nie bylo zalezne od odleglosci od kamery. Normalizacja
     odleglosci miedzy jakims punktem.
 2. Wykorzystanie dodatkowych punktow z face_mesh do stabilizacji detekcji (np. policzki)
-3. Odpornosc na zmiany oswietlenia - korekcja gamma, CLAHE, redukcja szumow, normalizacja jasnosci.
-    Opcja wlaczenia i wylaczenia do testow w konfigu.
-4. Okluzje - weryfikacja czy twarz w ogole istnieje/jest wykryta. Dodac wykrywanie dla 1 osoby.
-    Wykrywanie mrugania dla 1/2 oczu?
 5. Analizowac predkosc zmiany EAR - czy mruganie czy mruzenie - szybka zmiana mrugniecie + te policzki.
 6. Obsluga usuwania znaku
 7. Duza rozbudowa UI - EAR, czas zamkniecia, pokazanie czy otworzone, opcja facemesha widocznego
@@ -42,9 +38,11 @@ odszumianie filtr gaussa, wyrownanie histogramu
 4. zmierzenie poprawnosci
 
 
-
-
-
+# 11.04
+- średnia EAR z 3 klatek
+- Opcja w configu wyswietlania facemsha i twarzy po postprocessingu
+- Wczesniej liczylo EAR prawego oka, lewego oka i potem z tego srednia. Teraz kazde oko osobno. Oba musza byc zamkniete
+- Postprocessing: CLAHE, gamma, odszumianie, normalizacja jasnosci
 
 
 
