@@ -3,10 +3,15 @@ from image_utils import enhance_frame
 from detector import EyeDetector
 from engine import MorseEngine
 from ui import UI
+from tests import run_tests
 import config
 
 
 def main():
+    if config.ENABLE_TESTS:
+        run_tests()
+        return
+
     cap = cv2.VideoCapture(0)
     detector = EyeDetector()
     engine = MorseEngine()

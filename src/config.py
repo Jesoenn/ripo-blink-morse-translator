@@ -1,4 +1,11 @@
 # ========================================
+# Tests
+# ========================================
+ENABLE_TESTS = True
+TESTS_PATH = "./test_imgs/"
+SAVE_IMG = "./test_imgs/"
+
+# ========================================
 # image_utils.py
 # ========================================
 SHOW_POSTPROCESSING_PLOT = False

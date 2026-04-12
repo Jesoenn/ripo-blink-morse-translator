@@ -44,6 +44,7 @@ odszumianie filtr gaussa, wyrownanie histogramu
 - Wczesniej liczylo EAR prawego oka, lewego oka i potem z tego srednia. Teraz kazde oko osobno. Oba musza byc zamkniete
 - Postprocessing: CLAHE, gamma, odszumianie, normalizacja jasnosci
 
-
-
+# 12.04
+Tworzenie zdjec strzalkami - save_camera.py
+Testy klasyfikacji
 
