@@ -40,10 +40,6 @@ def main():
             # 3. Check if blink based on ear and mouth stability
             engine.update(left_ear, right_ear)
 
-
-
-
-
         # 4. Render
         if config.SHOW_PROCESSED_FACE:
             if config.SHOW_FACEMESH:

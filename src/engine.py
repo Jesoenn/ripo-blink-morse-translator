@@ -64,22 +64,25 @@ class MorseEngine:
                 self.is_eye_closed = False
                 if duration < config.DOT_MAX_TIME:
                     self.current_sequence += "."
+                elif duration > config.TEXT_CLEAR:
+                    self.decoded_text = ""
+                    self.current_sequence = ""
+                    self.pause_processed = True
                 else:
                     self.current_sequence += "-"
                 self.last_state_change = now
 
-
             # End of letter/word
             if not self.pause_processed:
-                if duration > config.WORD_PAUSE:
-                    self.finalize_char()
-                    self.decoded_text += " "
-                    self.pause_processed = True
-                elif duration > config.CHAR_PAUSE:
+                if duration > config.CHAR_PAUSE:
                     self.finalize_char()
                     self.pause_processed = True
 
     def finalize_char(self):
         if self.current_sequence:
-            self.decoded_text += MorseTranslator.translate(self.current_sequence)
+            decoded_char = MorseTranslator.translate(self.current_sequence)
+            if decoded_char == "-":
+                self.decoded_text = self.decoded_text[:-1]  # Remove last symbol
+            elif decoded_char != "?":
+                self.decoded_text += decoded_char
             self.current_sequence = ""

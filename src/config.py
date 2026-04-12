@@ -1,7 +1,7 @@
 # ========================================
 # Tests
 # ========================================
-ENABLE_TESTS = True
+ENABLE_TESTS = False
 TESTS_PATH = "./test_imgs/"
 SAVE_IMG = "./test_imgs/"
 
@@ -25,7 +25,7 @@ BRIGHTNESS_TARGET = 50
 # ========================================
 # Camera display
 # ========================================
-SHOW_FACEMESH = True
+SHOW_FACEMESH = False
 SHOW_PROCESSED_FACE = True
 
 # ========================================
@@ -37,6 +37,7 @@ DOT_MAX_TIME = 0.4
 DASH_MIN_TIME = 0.5
 CHAR_PAUSE = 1.0
 WORD_PAUSE = 2.0
+TEXT_CLEAR = 3.0
 
 # ========================================
 # detector.py
