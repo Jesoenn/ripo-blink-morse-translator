@@ -37,7 +37,7 @@ class TestRunner:
 
         landmarks = results.multi_face_landmarks[0].landmark
         left_ear, right_ear = self.detector.calculate_ear_both_eyes(landmarks, w, h)
-        is_closed = left_ear < config.BLINK_THRESHOLD and right_ear < config.BLINK_THRESHOLD
+        is_closed = left_ear < config.BLINK_THRESHOLD or right_ear < config.BLINK_THRESHOLD
 
         classification = "CLOSED" if is_closed else "OPEN"
         return classification, left_ear, right_ear
