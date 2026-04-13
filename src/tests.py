@@ -37,6 +37,8 @@ class TestRunner:
 
         landmarks = results.multi_face_landmarks[0].landmark
         left_ear, right_ear = self.detector.calculate_ear_both_eyes(landmarks, w, h)
+
+        #TODO OR zamienic na and. Jedno oko zamkniete to OPEN, a nie closed
         is_closed = left_ear < config.BLINK_THRESHOLD or right_ear < config.BLINK_THRESHOLD
 
         classification = "CLOSED" if is_closed else "OPEN"
@@ -92,20 +94,23 @@ class TestRunner:
         # Save to CSV
         if results:
             try:
-                with open(results_file, 'w', newline='', encoding='utf-8') as f:
+                file_exists = os.path.exists(results_file)
+                write_header = not file_exists or os.stat(results_file).st_size == 0
+                with open(results_file, 'a', newline='', encoding='utf-8') as f:
                     writer = csv.writer(f, delimiter=';')
-                    writer.writerow([
-                        'Nazwa pliku',
-                        'Oryginalna etykieta',
-                        'Klasyfikacja',
-                        'CLAHE',
-                        'NOISE REDUCTION',
-                        'NORMALIZACJA JASNOSCI',
-                        'KOREKCJA GAMMA',
-                        'Left EAR',
-                        'Right EAR',
-                        'EAR threshold'
-                    ])
+                    if write_header:
+                        writer.writerow([
+                            'Nazwa pliku',
+                            'Oryginalna etykieta',
+                            'Klasyfikacja',
+                            'CLAHE',
+                            'NOISE REDUCTION',
+                            'NORMALIZACJA JASNOSCI',
+                            'KOREKCJA GAMMA',
+                            'Left EAR',
+                            'Right EAR',
+                            'EAR threshold'
+                        ])
                     writer.writerows(results)
 
                 print(f"\nResults in file: {results_file}")

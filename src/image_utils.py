@@ -1,8 +1,8 @@
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import config
-
+# import config
+import src.config as config
 
 def apply_gamma_correction(frame, gamma):
     inv_gamma = 1.0 / gamma

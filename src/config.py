@@ -1,7 +1,7 @@
 # ========================================
 # Tests
 # ========================================
-ENABLE_TESTS = False
+ENABLE_TESTS = True
 TESTS_PATH = "./test_imgs/"
 SAVE_IMG = "./test_imgs/"
 
@@ -13,13 +13,13 @@ SHOW_POSTPROCESSING_PLOT = False
 ENABLE_GAMMA_CORRECTION = False
 GAMMA_VALUE = 1.4  # > 1.0 brightens, < 1.0 darkens
 
-ENABLE_CLAHE = True # Contrast Limited Adaptive Histogram Equalization
+ENABLE_CLAHE = False # Contrast Limited Adaptive Histogram Equalization
 CLAHE_CLIP_LIMIT = 3.0
 CLAHE_TILE_GRID = (8, 8)
 
 ENABLE_NOISE_REDUCTION = False
 
-ENABLE_BRIGHTNESS_NORMALIZATION = True
+ENABLE_BRIGHTNESS_NORMALIZATION = False
 BRIGHTNESS_TARGET = 50
 
 # ========================================
@@ -32,7 +32,7 @@ SHOW_PROCESSED_FACE = True
 # engine.py
 # MorseEngine - translate blinks to symbols
 # ========================================
-BLINK_THRESHOLD = 0.18  # EAR THRESHOLD   0.20??
+BLINK_THRESHOLD = 0.18 # EAR THRESHOLD   0.18??
 DOT_MAX_TIME = 0.4
 DASH_MIN_TIME = 0.5
 CHAR_PAUSE = 1.0
