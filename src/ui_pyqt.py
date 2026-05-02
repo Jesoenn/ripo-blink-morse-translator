@@ -17,7 +17,7 @@ from qt_material import apply_stylesheet
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Blink To Morse Translator - PRO Layout")
+        self.setWindowTitle("Blink To Morse Translator")
         self.setMinimumSize(1000, 700)
 
         # Init camera and models
