@@ -37,3 +37,12 @@ class EyeDetector:
                 landmark_drawing_spec=None,
                 connection_drawing_spec=mp.solutions.drawing_styles.get_default_face_mesh_tesselation_style()
             )
+
+    def face_center_and_bbox(self, landmarks, w, h):
+        xs = [landmarks[i].x * w for i in range(len(landmarks))]
+        ys = [landmarks[i].y * h for i in range(len(landmarks))]
+        minx, maxx = min(xs), max(xs)
+        miny, maxy = min(ys), max(ys)
+        cx = (minx + maxx) / 2.0
+        cy = (miny + maxy) / 2.0
+        return (cx, cy), (maxx - minx, maxy - miny)

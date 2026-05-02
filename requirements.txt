@@ -2,3 +2,7 @@ numpy
 opencv-python
 mediapipe==0.10.21
 matplotlib
+pyspellchecker
+language-tool-python
+PyQt6
+qt_material

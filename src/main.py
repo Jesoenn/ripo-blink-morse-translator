@@ -36,9 +36,10 @@ def main():
         if results.multi_face_landmarks:
             landmarks = results.multi_face_landmarks[0].landmark
             left_ear, right_ear = detector.calculate_ear_both_eyes(landmarks, w, h)
+            face_center, bbox = detector.face_center_and_bbox(landmarks, w, h)
 
-            # 3. Check if blink based on ear and mouth stability
-            engine.update(left_ear, right_ear)
+            # 3. Check if blink based on ear and face stability
+            engine.update(left_ear, right_ear, face_center=face_center, frame_size=(w, h))
 
         # 4. Render
         if config.SHOW_PROCESSED_FACE:
