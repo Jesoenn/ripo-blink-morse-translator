@@ -1,7 +1,7 @@
 # ========================================
 # Tests
 # ========================================
-ENABLE_TESTS = True
+ENABLE_TESTS = False
 TESTS_PATH = "./test_imgs/"
 SAVE_IMG = "./test_imgs/"
 
@@ -13,7 +13,7 @@ SHOW_POSTPROCESSING_PLOT = False
 ENABLE_GAMMA_CORRECTION = False
 GAMMA_VALUE = 1.4  # > 1.0 brightens, < 1.0 darkens
 
-ENABLE_CLAHE = False # Contrast Limited Adaptive Histogram Equalization
+ENABLE_CLAHE = True # Contrast Limited Adaptive Histogram Equalization
 CLAHE_CLIP_LIMIT = 3.0
 CLAHE_TILE_GRID = (8, 8)
 
@@ -26,7 +26,7 @@ BRIGHTNESS_TARGET = 50
 # Camera display
 # ========================================
 SHOW_FACEMESH = False
-SHOW_PROCESSED_FACE = True
+SHOW_PROCESSED_FACE = False
 
 # ========================================
 # engine.py
