@@ -4,7 +4,7 @@ import time
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QLabel, QWidget,
                              QVBoxLayout, QHBoxLayout, QSlider, QFormLayout, QGroupBox, QProgressBar, QSizePolicy,
                              QFrame, QCheckBox, QScrollArea)
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QImage, QPixmap
 
 from image_utils import enhance_frame
@@ -14,80 +14,16 @@ import config
 from qt_material import apply_stylesheet
 
 
-class CameraWorker(QThread):
-    update_signal = pyqtSignal(QImage, dict)
-
-    def __init__(self):
-        super().__init__()
-        self.running = True
-
-    def run(self):
-        cap = cv2.VideoCapture(0)
-        detector = EyeDetector()
-        engine = MorseEngine()
-
-        while self.running:
-            ret, frame = cap.read()
-            if not ret:
-                continue
-
-            frame = cv2.flip(frame, 1)
-            h, w, _ = frame.shape
-
-            # Preprocess frame
-            processed = enhance_frame(frame)
-
-            # Face detection
-            results = detector.process(processed)
-
-            is_looking = False
-            left_ear_val, right_ear_val = 0.0, 0.0
-            if results.multi_face_landmarks:
-                landmarks = results.multi_face_landmarks[0].landmark
-                is_looking = detector.is_looking_at_camera(landmarks)
-                if is_looking:
-                    left_ear_val, right_ear_val = detector.calculate_ear_both_eyes(landmarks, w, h)
-                    face_center, bbox = detector.face_center_and_bbox(landmarks, w, h)
-                    engine.update(left_ear_val, right_ear_val, face_center=face_center, frame_size=(w, h))
-                else:
-                    engine.ready_to_start = False
-                    engine.stable_frames = 0
-
-            display_frame = processed if config.SHOW_PROCESSED_FACE else frame
-            if config.SHOW_FACEMESH and results.multi_face_landmarks:
-                detector.draw_facemesh(display_frame, results)
-
-            rgb_image = cv2.cvtColor(display_frame, cv2.COLOR_BGR2RGB)
-            h_img, w_img, ch = rgb_image.shape
-            bytes_per_line = ch * w_img
-            q_img = QImage(rgb_image.data, w_img, h_img, bytes_per_line, QImage.Format.Format_RGB888)
-            q_img = q_img.copy()
-
-            stats = {
-                "is_looking": is_looking,
-                "has_face": results.multi_face_landmarks is not None,
-                "ready_to_start": engine.ready_to_start,
-                "stable_frames": engine.stable_frames,
-                "average_left_ear": getattr(engine, 'average_left_ear', left_ear_val),
-                "average_right_ear": getattr(engine, 'average_right_ear', right_ear_val),
-                "is_eye_closed": engine.is_eye_closed,
-                "current_sequence": engine.current_sequence,
-                "decoded_text": engine.decoded_text,
-                "last_blink_end": engine.last_blink_end
-            }
-            self.update_signal.emit(q_img, stats)
-            self.msleep(10)
-        cap.release()
-
-    def stop(self):
-        self.running = False
-        self.wait()
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Blink To Morse Translator")
         self.setMinimumSize(1000, 700)
+
+        # Init camera and models
+        self.cap = cv2.VideoCapture(0)
+        self.detector = EyeDetector()
+        self.engine = MorseEngine()
 
         # Central Widget & Root Layout
         self.central_widget = QWidget()
@@ -106,17 +42,15 @@ class MainWindow(QMainWindow):
         self.content_layout = QHBoxLayout()
         self.root_layout.addLayout(self.content_layout)
 
-        # ================= LEFT PANEL =================
+        # LEFT PANEL
         self.left_panel = QWidget()
         self.left_layout = QVBoxLayout(self.left_panel)
         self.left_layout.setContentsMargins(0, 0, 0, 0)
         self.left_layout.setSpacing(15)
 
-        # 1. Camera Box
+        # 1. Camera Box (Resizes, expanding)
         self.video_container = QFrame()
         self.video_container.setStyleSheet("background-color: #121212; border-radius: 12px; border: 2px solid #26a69a;")
-        self.video_container.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        self.video_container.setContentsMargins(2, 2, 2, 2)
         self.video_layout = QVBoxLayout(self.video_container)
         self.video_layout.setContentsMargins(2, 2, 2, 2)
 
@@ -128,13 +62,14 @@ class MainWindow(QMainWindow):
 
         self.left_layout.addWidget(self.video_container, stretch=1)
 
-        # 2. Sequence panel
+        # 2. Translated Text Box (Below Camera)
+        # --- Sequence panel ---
         self.seq_group = QGroupBox("Sekwencja Morse'a")
         self.seq_group.setFixedHeight(70)
         self.seq_group.setStyleSheet("QGroupBox { font-size: 14px; font-weight: bold; color: #80cbc4; }")
         self.seq_layout = QVBoxLayout()
 
-        self.seq_label = QLabel("..-.")
+        self.seq_label = QLabel("Sekwencja: ")
         self.seq_label.setStyleSheet("font-size: 24px; color: #80cbc4; font-family: 'Courier New', monospace;")
         self.seq_label.setWordWrap(True)
         self.seq_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -144,12 +79,12 @@ class MainWindow(QMainWindow):
         self.seq_group.setLayout(self.seq_layout)
         self.left_layout.addWidget(self.seq_group)
 
-        # 3. Text panel
+        # --- PANEL TEKSTU ---
         self.text_group = QGroupBox("Przetłumaczony Tekst")
         self.text_group.setStyleSheet("QGroupBox { font-size: 16px; font-weight: bold; color: #ffffff; }")
         self.text_layout = QVBoxLayout()
 
-        self.text_label = QLabel("EXAMPLE")
+        self.text_label = QLabel("Tekst")
         self.text_label.setStyleSheet("font-size: 38px; font-weight: bold; color: #ffffff;")
         self.text_label.setWordWrap(True)
         self.text_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
@@ -209,13 +144,15 @@ class MainWindow(QMainWindow):
         # 3. Sliders / Settings
         self.sliders_group = QGroupBox("Parametry Algorytmu")
         self.sliders_group.setStyleSheet("QGroupBox { font-size: 14px; font-weight: bold; }")
-        self.sliders_group_layout = QVBoxLayout(self.sliders_group)
+        self.sliders_group_layout = QVBoxLayout(self.sliders_group)  # Layout dla ramki
 
+        # Tworzymy scroll, który trafi do środka ramki
         self.sliders_scroll = QScrollArea()
         self.sliders_scroll.setWidgetResizable(True)
         self.sliders_scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
         self.sliders_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
+        # Kontener na suwaki (to on będzie się przewijał)
         self.sliders_content = QWidget()
         self.sliders_layout = QFormLayout(self.sliders_content)
         self.sliders_layout.setSpacing(12)
@@ -293,8 +230,8 @@ class MainWindow(QMainWindow):
         self.sliders_layout.addRow("", self.text_clear_label)
 
         self.sliders_scroll.setWidget(self.sliders_content)
-        self.sliders_group_layout.addWidget(self.sliders_scroll)
-        self.right_layout.addWidget(self.sliders_group, stretch=1)
+        self.sliders_group_layout.addWidget(self.sliders_scroll)  # Scroll ląduje w ramce
+        self.right_layout.addWidget(self.sliders_group, stretch=1)  # Ramka ląduje w panelu głównym
 
         # 4. Toggles / Image Options
         self.toggles_group = QGroupBox("Opcje obrazu")
@@ -310,10 +247,20 @@ class MainWindow(QMainWindow):
         self.toggles_layout = QVBoxLayout(self.toggles_content)
         self.toggles_layout.setSpacing(10)
 
-        self.cb_clahe = QCheckBox("Poprawa kontrastu")
+        self.cb_saturation = QCheckBox("Włącz poprawę Saturacji")
+        self.cb_saturation.setChecked(config.ENABLE_SATURATION)
+        self.cb_saturation.stateChanged.connect(self.toggle_saturation)
+        self.toggles_layout.addWidget(self.cb_saturation)
+
+        self.cb_clahe = QCheckBox("Włącz CLAHE")
         self.cb_clahe.setChecked(config.ENABLE_CLAHE)
         self.cb_clahe.stateChanged.connect(self.toggle_clahe)
         self.toggles_layout.addWidget(self.cb_clahe)
+
+        self.cb_gamma = QCheckBox("Włącz gammę")
+        self.cb_gamma.setChecked(config.ENABLE_GAMMA_CORRECTION)
+        self.cb_gamma.stateChanged.connect(self.toggle_gamma)
+        self.toggles_layout.addWidget(self.cb_gamma)
 
         self.cb_noise = QCheckBox("Redukcja szumów")
         self.cb_noise.setChecked(config.ENABLE_NOISE_REDUCTION)
@@ -325,12 +272,12 @@ class MainWindow(QMainWindow):
         self.cb_brightness.stateChanged.connect(self.toggle_brightness)
         self.toggles_layout.addWidget(self.cb_brightness)
 
-        self.cb_facemesh = QCheckBox("Pokaż siatkę twarzy")
+        self.cb_facemesh = QCheckBox("Pokaż Facemesh")
         self.cb_facemesh.setChecked(config.SHOW_FACEMESH)
         self.cb_facemesh.stateChanged.connect(self.toggle_facemesh)
         self.toggles_layout.addWidget(self.cb_facemesh)
 
-        self.cb_processed = QCheckBox("Pokaż przetworzoną twarz")
+        self.cb_processed = QCheckBox("Pokaż przetworzoną twarz (jeśli możliwe)")
         self.cb_processed.setChecked(config.SHOW_PROCESSED_FACE)
         self.cb_processed.stateChanged.connect(self.toggle_processed)
         self.toggles_layout.addWidget(self.cb_processed)
@@ -342,16 +289,19 @@ class MainWindow(QMainWindow):
         self.right_layout.addStretch()
         self.content_layout.addWidget(self.right_panel)
 
-        # Camera start in separate thread
-        self.worker = CameraWorker()
-        self.worker.update_signal.connect(self.update_ui)
-        self.worker.start()
+        # Engine Update Timer (~30 fps)
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_frame)
+        self.timer.start(30)
 
-    # Settings - sliders, checkboxes
+    def update_min_blink(self, value):
+        val = max(value / 1000.0, 0.001)
+        config.MIN_BLINK_DURATION = val
+        self.min_blink_label.setText(f"{value} ms")
+
     def update_max_blink(self, value):
         val = value / 1000.0
-        # Check against MIN_BLINK_DURATION dynamically if it exists
-        if hasattr(config, 'MIN_BLINK_DURATION') and val < config.MIN_BLINK_DURATION:
+        if val < config.MIN_BLINK_DURATION:
             val = config.MIN_BLINK_DURATION
             self.max_blink_slider.setValue(int(val * 1000))
         config.MAX_BLINK_DURATION = val
@@ -400,6 +350,12 @@ class MainWindow(QMainWindow):
     def toggle_clahe(self, state):
         config.ENABLE_CLAHE = bool(state)
 
+    def toggle_saturation(self, state):
+        config.ENABLE_SATURATION = bool(state)
+
+    def toggle_gamma(self, state):
+        config.ENABLE_GAMMA_CORRECTION = bool(state)
+
     def toggle_noise(self, state):
         config.ENABLE_NOISE_REDUCTION = bool(state)
 
@@ -412,54 +368,77 @@ class MainWindow(QMainWindow):
     def toggle_processed(self, state):
         config.SHOW_PROCESSED_FACE = bool(state)
 
-    # UI UPDATE
-    def update_ui(self, q_img, stats):
+    def update_frame(self):
+        ret, frame = self.cap.read()
+        if not ret:
+            return
+
+        frame = cv2.flip(frame, 1)
+        h, w, _ = frame.shape
+
+        # Preprocess frame (enhance)
+        processed = enhance_frame(frame)
+
+        # Detect face
+        results = self.detector.process(processed)
+
+        if results.multi_face_landmarks:
+            landmarks = results.multi_face_landmarks[0].landmark
+            left_ear, right_ear = self.detector.calculate_ear_both_eyes(landmarks, w, h)
+            face_center, bbox = self.detector.face_center_and_bbox(landmarks, w, h)
+
+            # Check if blink based on ear and face stability
+            self.engine.update(left_ear, right_ear, face_center=face_center, frame_size=(w, h))
+
+        display_frame = processed if config.SHOW_PROCESSED_FACE else frame
+        if config.SHOW_FACEMESH and results.multi_face_landmarks:
+            self.detector.draw_facemesh(display_frame, results)
+
+        # Scale QImage keeping aspect ratio for smooth window resizing
+        rgb_image = cv2.cvtColor(display_frame, cv2.COLOR_BGR2RGB)
+        h_img, w_img, ch = rgb_image.shape
+        bytes_per_line = ch * w_img
+        q_img = QImage(rgb_image.data, w_img, h_img, bytes_per_line, QImage.Format.Format_RGB888)
+
         pixmap = QPixmap.fromImage(q_img)
         scaled_pixmap = pixmap.scaled(self.video_label.size(), Qt.AspectRatioMode.KeepAspectRatio,
                                       Qt.TransformationMode.SmoothTransformation)
         self.video_label.setPixmap(scaled_pixmap)
 
-        if not stats['has_face']:
-            self.status_label.setText("Status: Nie wykryto twarzy")
-            self.status_label.setStyleSheet("color: #ff9800; font-weight: bold; font-size: 16px;")
-        elif not stats['is_looking']:
-            self.status_label.setText("Status: Patrz w kamerę")
-            self.status_label.setStyleSheet("color: #ff1744; font-weight: bold; font-size: 16px;")
+        # --- UI Updates ---
+        ready_text = f"READY ({self.engine.stable_frames}/{config.FACE_STABLE_FRAMES})" if self.engine.ready_to_start else f"WAITING ({self.engine.stable_frames}/{config.FACE_STABLE_FRAMES})"
+        self.status_label.setText(f"Status: {ready_text}")
+        if self.engine.ready_to_start:
+            self.status_label.setStyleSheet("color: #66bb6a; font-weight: bold; font-size: 16px;")
         else:
-            ready_text = f"READY ({stats['stable_frames']}/{config.FACE_STABLE_FRAMES})" if stats[
-                'ready_to_start'] else f"WAITING ({stats['stable_frames']}/{config.FACE_STABLE_FRAMES})"
-            self.status_label.setText(f"Status: {ready_text}")
-            if stats['ready_to_start']:
-                self.status_label.setStyleSheet("color: #66bb6a; font-weight: bold; font-size: 16px;")
-            else:
-                self.status_label.setStyleSheet("color: #ef5350; font-weight: bold; font-size: 16px;")
+            self.status_label.setStyleSheet("color: #ef5350; font-weight: bold; font-size: 16px;")
 
-            self.left_ear_label.setText(f"Lewe Oko EAR: {stats['average_left_ear']:.2f}")
-            self.right_ear_label.setText(f"Prawe Oko EAR: {stats['average_right_ear']:.2f}")
+        self.left_ear_label.setText(f"Lewe Oko EAR: {self.engine.average_left_ear:.2f}")
+        self.right_ear_label.setText(f"Prawe Oko EAR: {self.engine.average_right_ear:.2f}")
 
-            if stats['is_eye_closed']:
-                self.is_closed_label.setText("Mrugnięcie: TAK (Oko zamknięte)")
-                self.is_closed_label.setStyleSheet("color: #ef5350; font-weight: bold; font-size: 16px;")
-            else:
-                self.is_closed_label.setText("Mrugnięcie: NIE (Otwarte)")
-                self.is_closed_label.setStyleSheet("color: #66bb6a; font-weight: bold; font-size: 16px;")
+        if self.engine.is_eye_closed:
+            self.is_closed_label.setText("Mrugnięcie: TAK (Oko zamknięte)")
+            self.is_closed_label.setStyleSheet("color: #ef5350; font-weight: bold; font-size: 16px;")
+        else:
+            self.is_closed_label.setText("Mrugnięcie: NIE (Otwarte)")
+            self.is_closed_label.setStyleSheet("color: #66bb6a; font-weight: bold; font-size: 16px;")
 
-            self.seq_label.setText(f"{stats['current_sequence']}")
-            self.text_label.setText(f"{stats['decoded_text']}")
+        # Text wrapping handled by QLabel.setWordWrap(True)
+        self.seq_label.setText(f"{self.engine.current_sequence}")
+        self.text_label.setText(f"{self.engine.decoded_text}")
 
-            if stats['ready_to_start']:
-                pause_since = time.time() - stats['last_blink_end']
-                char_prog = min(pause_since / config.CHAR_PAUSE, 1.0) * 100
-                word_prog = min(pause_since / config.WORD_PAUSE, 1.0) * 100
-                self.char_bar.setValue(int(char_prog))
-                self.word_bar.setValue(int(word_prog))
-            else:
-                self.char_bar.setValue(0)
-                self.word_bar.setValue(0)
-
+        if self.engine.ready_to_start:
+            pause_since = time.time() - self.engine.last_blink_end
+            char_prog = min(pause_since / config.CHAR_PAUSE, 1.0) * 100
+            word_prog = min(pause_since / config.WORD_PAUSE, 1.0) * 100
+            self.char_bar.setValue(int(char_prog))
+            self.word_bar.setValue(int(word_prog))
+        else:
+            self.char_bar.setValue(0)
+            self.word_bar.setValue(0)
 
     def closeEvent(self, event):
-        self.worker.stop()
+        self.cap.release()
         super().closeEvent(event)
 
 

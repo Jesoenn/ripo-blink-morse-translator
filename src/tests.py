@@ -39,7 +39,7 @@ class TestRunner:
         left_ear, right_ear = self.detector.calculate_ear_both_eyes(landmarks, w, h)
 
         #TODO OR zamienic na and. Jedno oko zamkniete to OPEN, a nie closed
-        is_closed = left_ear < config.BLINK_THRESHOLD or right_ear < config.BLINK_THRESHOLD
+        is_closed = left_ear < config.BLINK_CLOSE_THRESHOLD or right_ear < config.BLINK_CLOSE_THRESHOLD
 
         classification = "CLOSED" if is_closed else "OPEN"
         return classification, left_ear, right_ear
@@ -85,7 +85,7 @@ class TestRunner:
                     "YES" if config.ENABLE_GAMMA_CORRECTION else "NO",
                     f"{left_ear:.4f}",
                     f"{right_ear:.4f}",
-                    f"{config.BLINK_THRESHOLD:.4f}"
+                    f"{config.BLINK_CLOSE_THRESHOLD:.4f}"
                 ]
                 results.append(row)
             else:
