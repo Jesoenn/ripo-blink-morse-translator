@@ -48,23 +48,36 @@ class EyeDetector:
         return (cx, cy), (maxx - minx, maxy - miny)
 
     def is_looking_at_camera(self, landmarks):
-        # Punkty nosa i skroni (uproszczone Head Pose)
         # 1 - czubek nosa
-        # 33 - lewa skroń
-        # 263 - prawa skroń
+        # 33, 263 - lewa, prawa skroń
+        # 10 - górna krawędź czoła (pion)
+        # 152 - dolna krawędź brody (pion)
 
+        # Distance from nose to left and right side of face (in X axis)
         nose = landmarks[1]
         left_side = landmarks[33]
         right_side = landmarks[263]
-
-        # Obliczamy dystans nosa od lewej i prawej krawędzi twarzy (w osi X)
         dist_left = abs(nose.x - left_side.x)
         dist_right = abs(nose.x - right_side.x)
 
-        # Obliczamy ratio - idealnie patrząc w kamerę ratio wynosi ~1.0
-        # Jeśli użytkownik odwróci głowę, dystans z jednej strony drastycznie spadnie.
-        ratio = dist_left / dist_right if dist_right != 0 else 0
+        # Calc ratio horizontal - ideally close to 1
+        ratio_h = dist_left / dist_right if dist_right != 0 else 0
 
-        # Próg 0.5 - 1.5 zazwyczaj oznacza, że twarz jest skierowana na wprost
-        # Możesz to dostosować w config.py (np. config.LOOK_THRESHOLD = 0.5)
-        return 0.5 < ratio < 1.8
+        # Y axis - distance from nose to top and bottom of face
+        top_side = landmarks[10]
+        bottom_side = landmarks[152]
+        dist_top = abs(nose.y - top_side.y)
+        dist_bottom = abs(nose.y - bottom_side.y)
+
+        ratio_v = dist_top / dist_bottom if dist_bottom != 0 else 0
+
+        # Check if ratios are within tolerance
+        h_lower = 1.0 - config.LOOK_TOLERANCE
+        h_upper = 1.0 + config.LOOK_TOLERANCE
+        v_lower = 0.8
+        v_upper = 2.0
+
+        horizontal_ok = h_lower < ratio_h < h_upper
+        vertical_ok = v_lower < ratio_v < v_upper
+
+        return horizontal_ok and vertical_ok

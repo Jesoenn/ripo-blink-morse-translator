@@ -52,6 +52,8 @@ FACE_CENTER_TOLERANCE = 0.07
 # detector.py
 # EyeDetector - eye landmark indexes
 # ========================================
+LOOK_TOLERANCE = 0.5 # Tolerance for looking at camera (ratio of distances)
+
 LEFT_EYE = [33, 160, 158, 133, 153, 144]
 RIGHT_EYE = [362, 385, 387, 263, 373, 380]
 
