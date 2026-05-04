@@ -1,7 +1,13 @@
 # ========================================
+# main.py
+# ========================================
+ACTIVE=False
+
+
+
+# ========================================
 # Tests
 # ========================================
-# Domyślnie uruchamiamy aplikację (kamera). Ustaw na True by uruchomić testy.
 ENABLE_TESTS = False
 TESTS_PATH = "./test_imgs/"
 SAVE_IMG = "./test_imgs/"

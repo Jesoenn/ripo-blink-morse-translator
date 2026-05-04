@@ -213,3 +213,7 @@ class MorseEngine:
         if corrected and corrected != last_word:
             self.decoded_text = prefix + corrected
             print(f"[Engine] Autocorrect: '{last_word}' -> '{corrected}'")
+
+    def clear_text(self):
+        self.decoded_text = ""
+        self.current_sequence = ""

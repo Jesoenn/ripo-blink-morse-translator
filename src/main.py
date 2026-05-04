@@ -3,7 +3,7 @@ import cv2
 import time
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QLabel, QWidget,
                              QVBoxLayout, QHBoxLayout, QSlider, QFormLayout, QGroupBox, QProgressBar, QSizePolicy,
-                             QFrame, QCheckBox, QScrollArea)
+                             QFrame, QCheckBox, QScrollArea, QPushButton)
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QImage, QPixmap
 
@@ -20,6 +20,10 @@ class CameraWorker(QThread):
     def __init__(self):
         super().__init__()
         self.running = True
+        self._clear_requested = False
+
+    def request_clear(self):
+        self._clear_requested = True
 
     def run(self):
         cap = cv2.VideoCapture(0)
@@ -27,6 +31,10 @@ class CameraWorker(QThread):
         engine = MorseEngine()
 
         while self.running:
+            if self._clear_requested:
+                engine.clear_text()
+                self._clear_requested = False
+
             ret, frame = cap.read()
             if not ret:
                 continue
@@ -42,7 +50,7 @@ class CameraWorker(QThread):
 
             is_looking = False
             left_ear_val, right_ear_val = 0.0, 0.0
-            if results.multi_face_landmarks:
+            if results.multi_face_landmarks and config.ACTIVE:
                 landmarks = results.multi_face_landmarks[0].landmark
                 is_looking = detector.is_looking_at_camera(landmarks)
                 if is_looking:
@@ -52,6 +60,9 @@ class CameraWorker(QThread):
                 else:
                     engine.ready_to_start = False
                     engine.stable_frames = 0
+            else:
+                engine.stable_frames = 0
+                engine.ready_to_start = False
 
             display_frame = processed if config.SHOW_PROCESSED_FACE else frame
             if config.SHOW_FACEMESH and results.multi_face_landmarks:
@@ -65,7 +76,7 @@ class CameraWorker(QThread):
 
             stats = {
                 "is_looking": is_looking,
-                "has_face": results.multi_face_landmarks is not None,
+                "has_face": results.multi_face_landmarks is not None and config.ACTIVE,
                 "ready_to_start": engine.ready_to_start,
                 "stable_frames": engine.stable_frames,
                 "average_left_ear": getattr(engine, 'average_left_ear', left_ear_val),
@@ -112,6 +123,9 @@ class MainWindow(QMainWindow):
         self.left_layout.setContentsMargins(0, 0, 0, 0)
         self.left_layout.setSpacing(15)
 
+        self.camera_row_layout = QHBoxLayout()
+        self.camera_row_layout.setSpacing(10)
+
         # 1. Camera Box
         self.video_container = QFrame()
         self.video_container.setStyleSheet("background-color: #121212; border-radius: 12px; border: 2px solid #26a69a;")
@@ -123,28 +137,96 @@ class MainWindow(QMainWindow):
         self.video_label = QLabel("Włączanie kamery...")
         self.video_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.video_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.video_label.setMinimumSize(640, 360)
+        self.video_label.setMinimumSize(320, 180)
         self.video_layout.addWidget(self.video_label)
 
-        self.left_layout.addWidget(self.video_container, stretch=1)
+        self.camera_row_layout.addWidget(self.video_container, stretch=5)
 
-        # 2. Sequence panel
+        # 2. Buttons
+        self.btns_container = QVBoxLayout()
+        self.btns_container.setSpacing(10)
+        self.btns_container.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        self.btn_toggle = QPushButton("START")
+        self.btn_toggle.setCheckable(True)
+        self.btn_toggle.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.btn_toggle.setFixedHeight(50)
+        self.btn_toggle.setStyleSheet("""
+            QPushButton { 
+                background-color: #263238; 
+                font-weight: bold; 
+                border: 1px solid #26a69a; 
+                border-radius: 6px; 
+                padding: 10px; 
+            }
+            QPushButton:hover { 
+                background-color: #37474f; 
+            }
+            QPushButton:checked:pressed { 
+                background-color: #1a2327; 
+            }
+            QPushButton:checked {
+                background-color: #d32f2f; /* Ciemniejsza czerwień */
+                border: 1px solid #ff5252;
+            }
+            QPushButton:checked:hover { 
+                background-color: #ff5252; 
+                border: 1px solid #ff8a80;
+            }
+            QPushButton:focus {
+                border: 1px solid #4db6ac;
+            }
+            QPushButton:checked:focus {
+                border: 1px solid #ff8a80;
+            }
+        """)
+        self.btn_toggle.toggled.connect(self.toggle_active_state)
+
+        self.btn_clear = QPushButton("Wyczyść")
+        self.btn_clear.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.btn_clear.setFixedHeight(50)
+        self.btn_clear.setStyleSheet("""
+                    QPushButton { 
+                        background-color: #263238; 
+                        font-weight: bold; 
+                        border: 1px solid #26a69a; 
+                        border-radius: 6px; 
+                        padding: 10px; 
+                    }
+                    QPushButton:focus { 
+                        background-color: #263238; 
+                        border: 1px solid #4db6ac; 
+                    }
+                    QPushButton:hover { 
+                        background-color: #37474f; 
+                    }
+                    QPushButton:pressed { 
+                        background-color: #1a2327; 
+                    }
+                """)
+        self.btn_clear.clicked.connect(self.clear_engine_text)
+
+        self.btns_container.addWidget(self.btn_toggle)
+        self.btns_container.addWidget(self.btn_clear)
+
+        self.camera_row_layout.addLayout(self.btns_container, stretch=1)
+        self.left_layout.addLayout(self.camera_row_layout, stretch=1)
+
+        # 3. Sequence panel
         self.seq_group = QGroupBox("Sekwencja Morse'a")
         self.seq_group.setFixedHeight(70)
         self.seq_group.setStyleSheet("QGroupBox { font-size: 14px; font-weight: bold; color: #80cbc4; }")
-        self.seq_layout = QVBoxLayout()
+        self.seq_group_layout = QVBoxLayout()
 
-        self.seq_label = QLabel("..-.")
-        self.seq_label.setStyleSheet("font-size: 24px; color: #80cbc4; font-family: 'Courier New', monospace;")
-        self.seq_label.setWordWrap(True)
+        self.seq_label = QLabel(".._..")
+        self.seq_label.setStyleSheet("font-size: 28px; color: #80cbc4; font-family: 'Courier New', monospace;")
         self.seq_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.seq_group_layout.addWidget(self.seq_label)
         self.seq_label.setMinimumHeight(15)
-
-        self.seq_layout.addWidget(self.seq_label)
-        self.seq_group.setLayout(self.seq_layout)
+        self.seq_group.setLayout(self.seq_group_layout)
         self.left_layout.addWidget(self.seq_group)
 
-        # 3. Text panel
+        # 4. Text panel
         self.text_group = QGroupBox("Przetłumaczony Tekst")
         self.text_group.setStyleSheet("QGroupBox { font-size: 16px; font-weight: bold; color: #ffffff; }")
         self.text_layout = QVBoxLayout()
@@ -362,6 +444,18 @@ class MainWindow(QMainWindow):
         config.FACE_CENTER_TOLERANCE = val
         self.tol_label.setText(f"{val:.3f}")
 
+    def toggle_active_state(self, checked):
+        config.ACTIVE = checked
+        if checked:
+            self.btn_toggle.setText("STOP")
+        else:
+            self.btn_toggle.setText("START")
+
+    def clear_engine_text(self):
+        self.text_label.setText("")
+        self.seq_label.setText("")
+        self.worker.request_clear()
+
     def update_close_th(self, value):
         val = value / 100.0
         config.BLINK_CLOSE_THRESHOLD = val
@@ -418,6 +512,7 @@ class MainWindow(QMainWindow):
         scaled_pixmap = pixmap.scaled(self.video_label.size(), Qt.AspectRatioMode.KeepAspectRatio,
                                       Qt.TransformationMode.SmoothTransformation)
         self.video_label.setPixmap(scaled_pixmap)
+        self.video_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         if not stats['has_face']:
             self.status_label.setText("Status: Nie wykryto twarzy")
