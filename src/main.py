@@ -126,91 +126,7 @@ class MainWindow(QMainWindow):
         self.camera_row_layout = QHBoxLayout()
         self.camera_row_layout.setSpacing(10)
 
-        # 1. Camera Box
-        self.video_container = QFrame()
-        self.video_container.setStyleSheet("background-color: #121212; border-radius: 12px; border: 2px solid #26a69a;")
-        self.video_container.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        self.video_container.setContentsMargins(2, 2, 2, 2)
-        self.video_layout = QVBoxLayout(self.video_container)
-        self.video_layout.setContentsMargins(2, 2, 2, 2)
 
-        self.video_label = QLabel("Włączanie kamery...")
-        self.video_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.video_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.video_label.setMinimumSize(320, 180)
-        self.video_layout.addWidget(self.video_label)
-
-        self.camera_row_layout.addWidget(self.video_container, stretch=5)
-
-        # 2. Buttons
-        self.btns_container = QVBoxLayout()
-        self.btns_container.setSpacing(10)
-        self.btns_container.setAlignment(Qt.AlignmentFlag.AlignTop)
-
-        self.btn_toggle = QPushButton("START")
-        self.btn_toggle.setCheckable(True)
-        self.btn_toggle.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        self.btn_toggle.setFixedHeight(50)
-        self.btn_toggle.setStyleSheet("""
-            QPushButton { 
-                background-color: #263238; 
-                font-weight: bold; 
-                border: 1px solid #26a69a; 
-                border-radius: 6px; 
-                padding: 10px; 
-            }
-            QPushButton:hover { 
-                background-color: #37474f; 
-            }
-            QPushButton:checked:pressed { 
-                background-color: #1a2327; 
-            }
-            QPushButton:checked {
-                background-color: #d32f2f; /* Ciemniejsza czerwień */
-                border: 1px solid #ff5252;
-            }
-            QPushButton:checked:hover { 
-                background-color: #ff5252; 
-                border: 1px solid #ff8a80;
-            }
-            QPushButton:focus {
-                border: 1px solid #4db6ac;
-            }
-            QPushButton:checked:focus {
-                border: 1px solid #ff8a80;
-            }
-        """)
-        self.btn_toggle.toggled.connect(self.toggle_active_state)
-
-        self.btn_clear = QPushButton("Wyczyść")
-        self.btn_clear.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        self.btn_clear.setFixedHeight(50)
-        self.btn_clear.setStyleSheet("""
-                    QPushButton { 
-                        background-color: #263238; 
-                        font-weight: bold; 
-                        border: 1px solid #26a69a; 
-                        border-radius: 6px; 
-                        padding: 10px; 
-                    }
-                    QPushButton:focus { 
-                        background-color: #263238; 
-                        border: 1px solid #4db6ac; 
-                    }
-                    QPushButton:hover { 
-                        background-color: #37474f; 
-                    }
-                    QPushButton:pressed { 
-                        background-color: #1a2327; 
-                    }
-                """)
-        self.btn_clear.clicked.connect(self.clear_engine_text)
-
-        self.btns_container.addWidget(self.btn_toggle)
-        self.btns_container.addWidget(self.btn_clear)
-
-        self.camera_row_layout.addLayout(self.btns_container, stretch=1)
-        self.left_layout.addLayout(self.camera_row_layout, stretch=1)
 
         # 3. Sequence panel
         self.seq_group = QGroupBox("Sekwencja Morse'a")
@@ -242,6 +158,92 @@ class MainWindow(QMainWindow):
         self.left_layout.addWidget(self.text_group)
 
         self.content_layout.addWidget(self.left_panel, stretch=1)
+
+        # 1. Camera Box
+        self.video_container = QFrame()
+        self.video_container.setStyleSheet("background-color: #121212; border-radius: 12px; border: 2px solid #26a69a;")
+        self.video_container.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        self.video_container.setContentsMargins(2, 2, 2, 2)
+        self.video_layout = QVBoxLayout(self.video_container)
+        self.video_layout.setContentsMargins(2, 2, 2, 2)
+
+        self.video_label = QLabel("Włączanie kamery...")
+        self.video_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.video_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.video_label.setMinimumSize(320, 180)
+        self.video_layout.addWidget(self.video_label)
+
+        self.camera_row_layout.addWidget(self.video_container, stretch=5)
+
+        # 2. Buttons
+        self.btns_container = QVBoxLayout()
+        self.btns_container.setSpacing(10)
+        self.btns_container.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        self.btn_toggle = QPushButton("START")
+        self.btn_toggle.setCheckable(True)
+        self.btn_toggle.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.btn_toggle.setFixedHeight(50)
+        self.btn_toggle.setStyleSheet("""
+                    QPushButton { 
+                        background-color: #263238; 
+                        font-weight: bold; 
+                        border: 1px solid #26a69a; 
+                        border-radius: 6px; 
+                        padding: 10px; 
+                    }
+                    QPushButton:hover { 
+                        background-color: #37474f; 
+                    }
+                    QPushButton:checked:pressed { 
+                        background-color: #1a2327; 
+                    }
+                    QPushButton:checked {
+                        background-color: #d32f2f; /* Ciemniejsza czerwień */
+                        border: 1px solid #ff5252;
+                    }
+                    QPushButton:checked:hover { 
+                        background-color: #ff5252; 
+                        border: 1px solid #ff8a80;
+                    }
+                    QPushButton:focus {
+                        border: 1px solid #4db6ac;
+                    }
+                    QPushButton:checked:focus {
+                        border: 1px solid #ff8a80;
+                    }
+                """)
+        self.btn_toggle.toggled.connect(self.toggle_active_state)
+
+        self.btn_clear = QPushButton("Wyczyść")
+        self.btn_clear.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.btn_clear.setFixedHeight(50)
+        self.btn_clear.setStyleSheet("""
+                            QPushButton { 
+                                background-color: #263238; 
+                                font-weight: bold; 
+                                border: 1px solid #26a69a; 
+                                border-radius: 6px; 
+                                padding: 10px; 
+                            }
+                            QPushButton:focus { 
+                                background-color: #263238; 
+                                border: 1px solid #4db6ac; 
+                            }
+                            QPushButton:hover { 
+                                background-color: #37474f; 
+                            }
+                            QPushButton:pressed { 
+                                background-color: #1a2327; 
+                            }
+                        """)
+        self.btn_clear.clicked.connect(self.clear_engine_text)
+
+        self.btns_container.addWidget(self.btn_toggle)
+        self.btns_container.addWidget(self.btn_clear)
+
+        self.camera_row_layout.addLayout(self.btns_container, stretch=1)
+        self.left_layout.addLayout(self.camera_row_layout, stretch=1)
 
         # ================= RIGHT PANEL =================
         self.right_panel = QWidget()
@@ -328,6 +330,14 @@ class MainWindow(QMainWindow):
         self.sliders_layout.addRow("Ruch twarzy (Tolerancja):", self.tol_slider)
         self.sliders_layout.addRow("", self.tol_label)
 
+        self.min_blink_slider = QSlider(Qt.Orientation.Horizontal)
+        self.min_blink_slider.setRange(0, 500)
+        self.min_blink_slider.setValue(int(config.MIN_BLINK_DURATION * 1000))
+        self.min_blink_label = QLabel(f"{config.MIN_BLINK_DURATION * 1000:.0f} ms")
+        self.min_blink_slider.valueChanged.connect(self.update_min_blink)
+        self.sliders_layout.addRow("Min. czas mrugnięcia:", self.min_blink_slider)
+        self.sliders_layout.addRow("", self.min_blink_label)
+
         self.close_th_slider = QSlider(Qt.Orientation.Horizontal)
         self.close_th_slider.setRange(5, 100)
         self.close_th_slider.setValue(int(config.BLINK_CLOSE_THRESHOLD * 100))
@@ -377,7 +387,7 @@ class MainWindow(QMainWindow):
         self.cb_brightness.stateChanged.connect(self.toggle_brightness)
         self.toggles_layout.addWidget(self.cb_brightness)
 
-        self.cb_facemesh = QCheckBox("Pokaż siatkę twarzy")
+        self.cb_facemesh = QCheckBox("Pokaż siatkę oczu")
         self.cb_facemesh.setChecked(config.SHOW_FACEMESH)
         self.cb_facemesh.stateChanged.connect(self.toggle_facemesh)
         self.toggles_layout.addWidget(self.cb_facemesh)
@@ -442,6 +452,11 @@ class MainWindow(QMainWindow):
         config.WORD_PAUSE = val
         self.word_pause_label.setText(f"{value} ms")
 
+    def update_min_blink(self, value):
+        val = value / 1000.0
+        config.MIN_BLINK_DURATION = val
+        self.min_blink_label.setText(f"{value} ms")
+
     def toggle_clahe(self, state):
         config.ENABLE_CLAHE = bool(state)
 
@@ -493,15 +508,34 @@ class MainWindow(QMainWindow):
             self.seq_label.setText(f"{stats['current_sequence']}")
             self.text_label.setText(f"{stats['decoded_text']}")
 
-            if stats['ready_to_start']:
-                pause_since = time.time() - stats['last_blink_end']
-                min_time = max(pause_since-config.CHAR_PAUSE, 0.0)
-                if (pause_since > config.CHAR_PAUSE + config.WORD_PAUSE):
-                    min_time = 0
-                word_prog = min(min_time / config.WORD_PAUSE, 1.0) * 100
-                self.word_bar.setValue(int(word_prog))
+            # if stats['ready_to_start']:
+            #     pause_since = time.time() - stats['last_blink_end']
+            #     min_time = max(pause_since-config.CHAR_PAUSE, 0.0)
+            #     if (pause_since > config.CHAR_PAUSE + config.WORD_PAUSE):
+            #         min_time = 0
+            #     word_prog = min(min_time / config.WORD_PAUSE, 1.0) * 100
+            #     self.word_bar.setValue(int(word_prog))
+            # else:
+            #     self.word_bar.setValue(0)
+
+        if stats['last_blink_end'] > 0:
+            pause_since = time.time() - stats['last_blink_end']
+
+            # Logika obliczania postępu (taka sama jak w engine)
+            # Pasek rusza dopiero po CHAR_PAUSE
+            if pause_since > config.CHAR_PAUSE:
+                time_in_word_zone = pause_since - config.CHAR_PAUSE
+                word_prog = min(time_in_word_zone / config.WORD_PAUSE, 1.0) * 100
+
+                # Jeśli czas przekroczył całkowitą pauzę, zerujemy (słowo zatwierdzone)
+                if pause_since > (config.CHAR_PAUSE + config.WORD_PAUSE):
+                    self.word_bar.setValue(0)
+                else:
+                    self.word_bar.setValue(int(word_prog))
             else:
                 self.word_bar.setValue(0)
+        else:
+            self.word_bar.setValue(0)
 
 
     def closeEvent(self, event):

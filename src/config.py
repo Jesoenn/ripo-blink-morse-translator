@@ -9,8 +9,8 @@ ACTIVE=False
 # Tests
 # ========================================
 ENABLE_TESTS = False
-TESTS_PATH = "./test_imgs/"
-SAVE_IMG = "./test_imgs/"
+TESTS_PATH = "../test_imgs/"
+SAVE_IMG = "../test_imgs/"
 
 # ========================================
 # image_utils.py

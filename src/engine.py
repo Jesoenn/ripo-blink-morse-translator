@@ -204,20 +204,28 @@ class MorseEngine:
             return
         if not self.decoded_text or not self.decoded_text.strip():
             return
-        # get the last word (everything after last space)
-        last_space_idx = self.decoded_text.rfind(' ')
+        # get the last word (everything after last space) - no race condition
+        full_text_at_start = self.decoded_text
+        last_space_idx = full_text_at_start.rfind(' ')
         if last_space_idx == -1:
             # no space found - entire text is one word
             last_word = self.decoded_text
             prefix = ''
         else:
-            prefix = self.decoded_text[:last_space_idx + 1]
-            last_word = self.decoded_text[last_space_idx + 1:]
+            prefix = full_text_at_start[:last_space_idx + 1]
+            last_word = full_text_at_start[last_space_idx + 1:]
 
-        def run_correction(word_to_correct, text_prefix):
+        def run_correction(word_to_correct, text_prefix, original_full_text=full_text_at_start):
             corrected = self.autocorrector.correct_text(word_to_correct)
+
             if corrected and corrected != word_to_correct:
-                self.decoded_text = text_prefix + corrected
+                # if no new letter was added since correction
+                if self.decoded_text == original_full_text:
+                    self.decoded_text = text_prefix + corrected
+                else:
+                    # Save what was added during thread execution, replace only corrected word
+                    new_extension = self.decoded_text[len(original_full_text):]
+                    self.decoded_text = text_prefix + corrected + new_extension
 
         threading.Thread(target=run_correction, args=(last_word, prefix), daemon=True).start()
 

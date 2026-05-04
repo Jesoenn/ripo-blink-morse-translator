@@ -36,9 +36,15 @@ class TestRunner:
             return None
 
         landmarks = results.multi_face_landmarks[0].landmark
+
+        # Check if looking at camera
+        is_looking = self.detector.is_looking_at_camera(landmarks)
+        if not is_looking:
+            return "SIDE", 0.0, 0.0
+
         left_ear, right_ear = self.detector.calculate_ear_both_eyes(landmarks, w, h)
 
-        #TODO OR zamienic na and. Jedno oko zamkniete to OPEN, a nie closed
+        #JEDNO OKO ZAMKNIETE TO closed. OBA MUSZA BYC OTWARTE
         is_closed = left_ear < config.BLINK_CLOSE_THRESHOLD or right_ear < config.BLINK_CLOSE_THRESHOLD
 
         classification = "CLOSED" if is_closed else "OPEN"
@@ -75,14 +81,16 @@ class TestRunner:
                 classification, left_ear, right_ear = result
                 print(f"OK - {classification}")
 
+                is_correct = "YES" if classification == original_label else "NO"
+
                 row = [
                     filename,
                     original_label,
                     classification,
+                    is_correct,
                     "YES" if config.ENABLE_CLAHE else "NO",
                     "YES" if config.ENABLE_NOISE_REDUCTION else "NO",
                     "YES" if config.ENABLE_BRIGHTNESS_NORMALIZATION else "NO",
-                    "YES" if config.ENABLE_GAMMA_CORRECTION else "NO",
                     f"{left_ear:.4f}",
                     f"{right_ear:.4f}",
                     f"{config.BLINK_CLOSE_THRESHOLD:.4f}"
@@ -103,10 +111,10 @@ class TestRunner:
                             'Nazwa pliku',
                             'Oryginalna etykieta',
                             'Klasyfikacja',
+                            'Poprawnosc',
                             'CLAHE',
                             'NOISE REDUCTION',
                             'NORMALIZACJA JASNOSCI',
-                            'KOREKCJA GAMMA',
                             'Left EAR',
                             'Right EAR',
                             'EAR threshold'
@@ -124,3 +132,5 @@ def run_tests():
     classifier.run_tests()
     print("Tests finished\n")
 
+if __name__ == "__main__":
+    run_tests()

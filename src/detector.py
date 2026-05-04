@@ -29,13 +29,28 @@ class EyeDetector:
     def draw_facemesh(self, frame, results):
         if not results.multi_face_landmarks:
             return
+
+        style = mp.solutions.drawing_utils.DrawingSpec(
+            color=(0, 255, 0),
+            thickness=1,
+            circle_radius=1
+        )
+
         for face_landmarks in results.multi_face_landmarks:
             mp.solutions.drawing_utils.draw_landmarks(
-                frame,
-                face_landmarks,
-                mp.solutions.face_mesh.FACEMESH_TESSELATION,
+                image=frame,
+                landmark_list=face_landmarks,
+                connections=mp.solutions.face_mesh.FACEMESH_LEFT_EYE,
                 landmark_drawing_spec=None,
-                connection_drawing_spec=mp.solutions.drawing_styles.get_default_face_mesh_tesselation_style()
+                connection_drawing_spec=style
+            )
+
+            mp.solutions.drawing_utils.draw_landmarks(
+                image=frame,
+                landmark_list=face_landmarks,
+                connections=mp.solutions.face_mesh.FACEMESH_RIGHT_EYE,
+                landmark_drawing_spec=None,
+                connection_drawing_spec=style
             )
 
     def face_center_and_bbox(self, landmarks, w, h):

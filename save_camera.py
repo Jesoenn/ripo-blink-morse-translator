@@ -25,7 +25,7 @@ def main():
         print("Cannot open camera.")
         return
 
-    print(f"Lewa strzalka: Zapisz jako CLOSED\nPrawa strzalka: Zapisz jako OPEN\nESC: Wyjdz")
+    print(f"Lewa strzalka: Zapisz jako CLOSED\nPrawa strzalka: Zapisz jako OPEN\nGóra strzałka - Zapisz jako SIDE\nESC: Wyjdz")
 
     while True:
         ret, frame = cap.read()
@@ -48,6 +48,12 @@ def main():
         elif key == 2555904:
             idx = get_next_index(folder, "OPEN")
             fname = f"OPEN_{idx}.jpg"
+            cv2.imwrite(os.path.join(folder, fname), frame)
+            print(f"Saved file to: {fname}")
+        # UP ARROW
+        elif key == 2490368:
+            idx = get_next_index(folder, "SIDE")
+            fname = f"SIDE_{idx}.jpg"
             cv2.imwrite(os.path.join(folder, fname), frame)
             print(f"Saved file to: {fname}")
 
