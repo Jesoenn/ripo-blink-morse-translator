@@ -255,9 +255,9 @@ class MainWindow(QMainWindow):
         self.info_layout = QVBoxLayout()
         self.info_layout.setSpacing(10)
 
-        self.status_label = QLabel("Status: WAIT")
-        self.left_ear_label = QLabel("Lewe Oko EAR: 0.00")
-        self.right_ear_label = QLabel("Prawe Oko EAR: 0.00")
+        self.status_label = QLabel("Status: Czekaj")
+        self.left_ear_label = QLabel("Lewe Oko: 0.00")
+        self.right_ear_label = QLabel("Prawe Oko: 0.00")
         self.is_closed_label = QLabel("Mrugnięcie: NIE")
 
         for lbl in (self.status_label, self.left_ear_label, self.right_ear_label, self.is_closed_label):
@@ -521,8 +521,8 @@ class MainWindow(QMainWindow):
             self.status_label.setText("Status: Patrz w kamerę")
             self.status_label.setStyleSheet("color: #ff1744; font-weight: bold; font-size: 16px;")
         else:
-            ready_text = f"READY ({stats['stable_frames']}/{config.FACE_STABLE_FRAMES})" if stats[
-                'ready_to_start'] else f"WAITING ({stats['stable_frames']}/{config.FACE_STABLE_FRAMES})"
+            ready_text = f"Gotowy" if stats[
+                'ready_to_start'] else f"Czekaj ({stats['stable_frames']}/{config.FACE_STABLE_FRAMES})"
             self.status_label.setText(f"Status: {ready_text}")
             if stats['ready_to_start']:
                 self.status_label.setStyleSheet("color: #66bb6a; font-weight: bold; font-size: 16px;")
@@ -536,7 +536,7 @@ class MainWindow(QMainWindow):
                 self.is_closed_label.setText("Mrugnięcie: TAK (Oko zamknięte)")
                 self.is_closed_label.setStyleSheet("color: #ef5350; font-weight: bold; font-size: 16px;")
             else:
-                self.is_closed_label.setText("Mrugnięcie: NIE (Otwarte)")
+                self.is_closed_label.setText("Mrugnięcie: NIE (Oko otwarte)")
                 self.is_closed_label.setStyleSheet("color: #66bb6a; font-weight: bold; font-size: 16px;")
 
             self.seq_label.setText(f"{stats['current_sequence']}")

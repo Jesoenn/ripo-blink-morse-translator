@@ -29,6 +29,7 @@ class MorseEngine:
         self.face_center_history = []
         self.stable_frames = 0
         self.ready_to_start = False
+
         # Autocorrector (simple prototype)
         try:
             self.autocorrector = Autocorrector(language='pl', debug=True)
@@ -63,7 +64,6 @@ class MorseEngine:
         now = time.time()
         duration = now - self.last_state_change
 
-
         # Update face stability / readiness
         if face_center and frame_size:
             w, h = frame_size
@@ -84,15 +84,15 @@ class MorseEngine:
                     max_disp = disp
 
             if max_disp < config.FACE_CENTER_TOLERANCE:
-                self.stable_frames += 1
+                if self.stable_frames <= config.FACE_STABLE_FRAMES:
+                    self.stable_frames += 1
+            # Face movement, reset
             else:
                 self.stable_frames = 0
                 if self.ready_to_start:
-                    # Twarz się rusza - resetuj ready status aby wymusić ponowną stabilizację
                     self.ready_to_start = False
-                    print(f"[Engine] Face moved - READY reset")
 
-            if self.stable_frames >= config.FACE_STABLE_FRAMES:
+            if not self.ready_to_start and self.stable_frames >= config.FACE_STABLE_FRAMES:
                 self.ready_to_start = True
 
         # If one eye is always very low/high, assume it's not visible -> use only other eye
