@@ -129,6 +129,34 @@ class TestRunner:
 def run_tests():
     print("\nStarting tests...")
     classifier = TestRunner()
+
+    config.ENABLE_CLAHE = False
+    config.ENABLE_NOISE_REDUCTION = False
+    config.ENABLE_BRIGHTNESS_NORMALIZATION = False
+    classifier.run_tests()
+    print("Tests finished\n")
+
+    config.ENABLE_CLAHE = True
+    config.ENABLE_NOISE_REDUCTION = False
+    config.ENABLE_BRIGHTNESS_NORMALIZATION = False
+    classifier.run_tests()
+    print("Tests finished\n")
+
+    config.ENABLE_CLAHE = False
+    config.ENABLE_NOISE_REDUCTION = True
+    config.ENABLE_BRIGHTNESS_NORMALIZATION = False
+    classifier.run_tests()
+    print("Tests finished\n")
+
+    config.ENABLE_CLAHE = False
+    config.ENABLE_NOISE_REDUCTION = False
+    config.ENABLE_BRIGHTNESS_NORMALIZATION = True
+    classifier.run_tests()
+    print("Tests finished\n")
+
+    config.ENABLE_CLAHE = True
+    config.ENABLE_NOISE_REDUCTION = True
+    config.ENABLE_BRIGHTNESS_NORMALIZATION = True
     classifier.run_tests()
     print("Tests finished\n")
 
