@@ -4,10 +4,11 @@ def test_autocorrector():
     corrector = Autocorrector(language='pl', debug=True)
 
     test_cases = [
-        "witim na pokladie",
-        "czesc!",
-        "Idę jutro do kino",
-        "Ala ma kta"
+        "witam na pokladie",
+        "wieksza czesc",
+        "Idę jutro do kinao",
+        "dwie sztabki klota",
+        "pruba"
     ]
 
     for i, original in enumerate(test_cases, 1):

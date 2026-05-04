@@ -97,7 +97,7 @@ class CameraWorker(QThread):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Blink To Morse Translator")
+        self.setWindowTitle("Tłumacz Mrugnięć Na Kod Morse'a")
         self.setMinimumSize(1000, 700)
 
         # Central Widget & Root Layout
@@ -108,7 +108,7 @@ class MainWindow(QMainWindow):
         self.root_layout.setSpacing(15)
 
         # TOP: App Title
-        self.title_label = QLabel("BLINK TO MORSE TRANSLATOR")
+        self.title_label = QLabel("TŁUMACZ MRUGNIĘĆ NA KOD MORSE'A")
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.title_label.setStyleSheet("font-size: 28px; font-weight: 900; color: #4db6ac; letter-spacing: 2px;")
         self.root_layout.addWidget(self.title_label)
