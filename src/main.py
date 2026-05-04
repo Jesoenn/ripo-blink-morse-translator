@@ -296,6 +296,22 @@ class MainWindow(QMainWindow):
         self.sliders_layout = QFormLayout(self.sliders_content)
         self.sliders_layout.setSpacing(12)
 
+        self.word_pause_slider = QSlider(Qt.Orientation.Horizontal)
+        self.word_pause_slider.setRange(500, 10000)
+        self.word_pause_slider.setValue(int(config.WORD_PAUSE * 1000))
+        self.word_pause_label = QLabel(f"{config.WORD_PAUSE * 1000:.0f} ms")
+        self.word_pause_slider.valueChanged.connect(self.update_word_pause)
+        self.sliders_layout.addRow("Przerwa po slowie:", self.word_pause_slider)
+        self.sliders_layout.addRow("", self.word_pause_label)
+
+        self.char_pause_slider = QSlider(Qt.Orientation.Horizontal)
+        self.char_pause_slider.setRange(100, 5000)
+        self.char_pause_slider.setValue(int(config.CHAR_PAUSE * 1000))
+        self.char_pause_label = QLabel(f"{config.CHAR_PAUSE * 1000:.0f} ms")
+        self.char_pause_slider.valueChanged.connect(self.update_char_pause)
+        self.sliders_layout.addRow("Pauza znaku:", self.char_pause_slider)
+        self.sliders_layout.addRow("", self.char_pause_label)
+
         self.dot_max_slider = QSlider(Qt.Orientation.Horizontal)
         self.dot_max_slider.setRange(50, 1500)
         self.dot_max_slider.setValue(int(config.DOT_MAX_TIME * 1000))
@@ -327,40 +343,6 @@ class MainWindow(QMainWindow):
         self.open_th_slider.valueChanged.connect(self.update_open_th)
         self.sliders_layout.addRow("Otwieranie EAR > :", self.open_th_slider)
         self.sliders_layout.addRow("", self.open_th_label)
-
-
-
-        # self.dash_min_slider = QSlider(Qt.Orientation.Horizontal)
-        # self.dash_min_slider.setRange(100, 3000)
-        # self.dash_min_slider.setValue(int(config.DASH_MIN_TIME * 1000))
-        # self.dash_min_label = QLabel(f"{config.DASH_MIN_TIME * 1000:.0f} ms")
-        # self.dash_min_slider.valueChanged.connect(self.update_dash_min)
-        # self.sliders_layout.addRow("Min czas kreski:", self.dash_min_slider)
-        # self.sliders_layout.addRow("", self.dash_min_label)
-
-        self.char_pause_slider = QSlider(Qt.Orientation.Horizontal)
-        self.char_pause_slider.setRange(100, 5000)
-        self.char_pause_slider.setValue(int(config.CHAR_PAUSE * 1000))
-        self.char_pause_label = QLabel(f"{config.CHAR_PAUSE * 1000:.0f} ms")
-        self.char_pause_slider.valueChanged.connect(self.update_char_pause)
-        self.sliders_layout.addRow("Pauza znaku:", self.char_pause_slider)
-        self.sliders_layout.addRow("", self.char_pause_label)
-
-        self.word_pause_slider = QSlider(Qt.Orientation.Horizontal)
-        self.word_pause_slider.setRange(500, 10000)
-        self.word_pause_slider.setValue(int(config.WORD_PAUSE * 1000))
-        self.word_pause_label = QLabel(f"{config.WORD_PAUSE * 1000:.0f} ms")
-        self.word_pause_slider.valueChanged.connect(self.update_word_pause)
-        self.sliders_layout.addRow("Pauza słowa/spacja:", self.word_pause_slider)
-        self.sliders_layout.addRow("", self.word_pause_label)
-
-        self.text_clear_slider = QSlider(Qt.Orientation.Horizontal)
-        self.text_clear_slider.setRange(1000, 20000)
-        self.text_clear_slider.setValue(int(config.TEXT_CLEAR * 1000))
-        self.text_clear_label = QLabel(f"{config.TEXT_CLEAR * 1000:.0f} ms")
-        self.text_clear_slider.valueChanged.connect(self.update_text_clear)
-        self.sliders_layout.addRow("Czas czyszczenia tekstu:", self.text_clear_slider)
-        self.sliders_layout.addRow("", self.text_clear_label)
 
         self.sliders_scroll.setWidget(self.sliders_content)
         self.sliders_group_layout.addWidget(self.sliders_scroll)
@@ -450,11 +432,6 @@ class MainWindow(QMainWindow):
         config.DOT_MAX_TIME = val
         self.dot_max_label.setText(f"{value} ms")
 
-    def update_dash_min(self, value):
-        val = value / 1000.0
-        config.DASH_MIN_TIME = val
-        self.dash_min_label.setText(f"{value} ms")
-
     def update_char_pause(self, value):
         val = value / 1000.0
         config.CHAR_PAUSE = val
@@ -464,11 +441,6 @@ class MainWindow(QMainWindow):
         val = value / 1000.0
         config.WORD_PAUSE = val
         self.word_pause_label.setText(f"{value} ms")
-
-    def update_text_clear(self, value):
-        val = value / 1000.0
-        config.TEXT_CLEAR = val
-        self.text_clear_label.setText(f"{value} ms")
 
     def toggle_clahe(self, state):
         config.ENABLE_CLAHE = bool(state)
