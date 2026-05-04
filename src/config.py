@@ -9,8 +9,8 @@ ACTIVE=False
 # Tests
 # ========================================
 ENABLE_TESTS = False
-TESTS_PATH = "../test_imgs/"
-SAVE_IMG = "../test_imgs/"
+TESTS_PATH = "./test_imgs/"
+SAVE_IMG = "./test_imgs/"
 
 # ========================================
 # image_utils.py
@@ -21,13 +21,13 @@ GAMMA_MIN = 0.4          # Lowest brightness during day
 GAMMA_MAX = 2.5          # Max brightness during night
 
 ENABLE_CLAHE = True
-CLAHE_CLIP_LIMIT = 3.0
+CLAHE_CLIP_LIMIT = 1.5
 CLAHE_TILE_GRID = (8, 8)
 
 ENABLE_NOISE_REDUCTION = True
-BILATERAL_D = 3
-BILATERAL_SIGMA_COLOR = 25
-BILATERAL_SIGMA_SPACE = 25
+BILATERAL_D = 5
+BILATERAL_SIGMA_COLOR = 30
+BILATERAL_SIGMA_SPACE = 30
 
 # ========================================
 # Camera display
