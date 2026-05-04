@@ -43,8 +43,8 @@ SHOW_PROCESSED_FACE = True
 BLINK_CLOSE_THRESHOLD = 0.15   # EAR poniżej tego = oczy zamykają się
 BLINK_OPEN_THRESHOLD = 0.20    # EAR powyżej tego = oczy otwierają się (zapobiega oscylacji)
 DOT_MAX_TIME = 0.4
-DASH_MIN_TIME = 0.5
-CHAR_PAUSE = 1.0
+# DASH_MIN_TIME = 0.5
+CHAR_PAUSE = 1.0    # Pause after accepting letter
 WORD_PAUSE = 2.0
 TEXT_CLEAR = 3.0
 MIN_BLINK_DURATION = 0.05  # Minimalny czas mrugnięcia w sekundach (filtrowanie szumów)

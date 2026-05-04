@@ -268,16 +268,10 @@ class MainWindow(QMainWindow):
         self.right_layout.addWidget(self.info_group)
 
         # 2. Timing/Pauses
-        self.pause_group = QGroupBox("Detekcja Znaków / Słów (Pauzy)")
+        self.pause_group = QGroupBox("Detekcja Przerwy")
         self.pause_group.setStyleSheet("QGroupBox { font-size: 14px; font-weight: bold; }")
         self.pause_layout = QVBoxLayout()
         self.pause_layout.setSpacing(15)
-
-        self.char_bar = QProgressBar()
-        self.char_bar.setMaximum(100)
-        self.char_bar.setFormat("Znak (Char): %p%")
-        self.char_bar.setStyleSheet("QProgressBar::chunk { background-color: #29b6f6; }")
-        self.pause_layout.addWidget(self.char_bar)
 
         self.word_bar = QProgressBar()
         self.word_bar.setMaximum(100)
@@ -302,16 +296,16 @@ class MainWindow(QMainWindow):
         self.sliders_layout = QFormLayout(self.sliders_content)
         self.sliders_layout.setSpacing(12)
 
-        self.max_blink_slider = QSlider(Qt.Orientation.Horizontal)
-        self.max_blink_slider.setRange(300, 3000)
-        self.max_blink_slider.setValue(int(config.MAX_BLINK_DURATION * 1000))
-        self.max_blink_label = QLabel(f"{config.MAX_BLINK_DURATION * 1000:.0f} ms")
-        self.max_blink_slider.valueChanged.connect(self.update_max_blink)
-        self.sliders_layout.addRow("Maksymalny czas mrug.:", self.max_blink_slider)
-        self.sliders_layout.addRow("", self.max_blink_label)
+        self.dot_max_slider = QSlider(Qt.Orientation.Horizontal)
+        self.dot_max_slider.setRange(50, 1500)
+        self.dot_max_slider.setValue(int(config.DOT_MAX_TIME * 1000))
+        self.dot_max_label = QLabel(f"{config.DOT_MAX_TIME * 1000:.0f} ms")
+        self.dot_max_slider.valueChanged.connect(self.update_dot_max)
+        self.sliders_layout.addRow("Max czas kropki:", self.dot_max_slider)
+        self.sliders_layout.addRow("", self.dot_max_label)
 
         self.tol_slider = QSlider(Qt.Orientation.Horizontal)
-        self.tol_slider.setRange(1, 500)
+        self.tol_slider.setRange(1, 300)
         self.tol_slider.setValue(int(config.FACE_CENTER_TOLERANCE * 1000))
         self.tol_label = QLabel(f"{config.FACE_CENTER_TOLERANCE:.3f}")
         self.tol_slider.valueChanged.connect(self.update_tol)
@@ -323,7 +317,7 @@ class MainWindow(QMainWindow):
         self.close_th_slider.setValue(int(config.BLINK_CLOSE_THRESHOLD * 100))
         self.close_th_label = QLabel(f"{config.BLINK_CLOSE_THRESHOLD:.2f}")
         self.close_th_slider.valueChanged.connect(self.update_close_th)
-        self.sliders_layout.addRow("Zamykanie oka EAR < :", self.close_th_slider)
+        self.sliders_layout.addRow("Zamykanie EAR < :", self.close_th_slider)
         self.sliders_layout.addRow("", self.close_th_label)
 
         self.open_th_slider = QSlider(Qt.Orientation.Horizontal)
@@ -331,24 +325,18 @@ class MainWindow(QMainWindow):
         self.open_th_slider.setValue(int(config.BLINK_OPEN_THRESHOLD * 100))
         self.open_th_label = QLabel(f"{config.BLINK_OPEN_THRESHOLD:.2f}")
         self.open_th_slider.valueChanged.connect(self.update_open_th)
-        self.sliders_layout.addRow("Otwieranie oka EAR > :", self.open_th_slider)
+        self.sliders_layout.addRow("Otwieranie EAR > :", self.open_th_slider)
         self.sliders_layout.addRow("", self.open_th_label)
 
-        self.dot_max_slider = QSlider(Qt.Orientation.Horizontal)
-        self.dot_max_slider.setRange(100, 2000)
-        self.dot_max_slider.setValue(int(config.DOT_MAX_TIME * 1000))
-        self.dot_max_label = QLabel(f"{config.DOT_MAX_TIME * 1000:.0f} ms")
-        self.dot_max_slider.valueChanged.connect(self.update_dot_max)
-        self.sliders_layout.addRow("Max czas kropki:", self.dot_max_slider)
-        self.sliders_layout.addRow("", self.dot_max_label)
 
-        self.dash_min_slider = QSlider(Qt.Orientation.Horizontal)
-        self.dash_min_slider.setRange(100, 3000)
-        self.dash_min_slider.setValue(int(config.DASH_MIN_TIME * 1000))
-        self.dash_min_label = QLabel(f"{config.DASH_MIN_TIME * 1000:.0f} ms")
-        self.dash_min_slider.valueChanged.connect(self.update_dash_min)
-        self.sliders_layout.addRow("Min czas kreski:", self.dash_min_slider)
-        self.sliders_layout.addRow("", self.dash_min_label)
+
+        # self.dash_min_slider = QSlider(Qt.Orientation.Horizontal)
+        # self.dash_min_slider.setRange(100, 3000)
+        # self.dash_min_slider.setValue(int(config.DASH_MIN_TIME * 1000))
+        # self.dash_min_label = QLabel(f"{config.DASH_MIN_TIME * 1000:.0f} ms")
+        # self.dash_min_slider.valueChanged.connect(self.update_dash_min)
+        # self.sliders_layout.addRow("Min czas kreski:", self.dash_min_slider)
+        # self.sliders_layout.addRow("", self.dash_min_label)
 
         self.char_pause_slider = QSlider(Qt.Orientation.Horizontal)
         self.char_pause_slider.setRange(100, 5000)
@@ -430,15 +418,6 @@ class MainWindow(QMainWindow):
         self.worker.start()
 
     # Settings - sliders, checkboxes
-    def update_max_blink(self, value):
-        val = value / 1000.0
-        # Check against MIN_BLINK_DURATION dynamically if it exists
-        if hasattr(config, 'MIN_BLINK_DURATION') and val < config.MIN_BLINK_DURATION:
-            val = config.MIN_BLINK_DURATION
-            self.max_blink_slider.setValue(int(val * 1000))
-        config.MAX_BLINK_DURATION = val
-        self.max_blink_label.setText(f"{int(val * 1000)} ms")
-
     def update_tol(self, value):
         val = max(value / 1000.0, 0.001)
         config.FACE_CENTER_TOLERANCE = val
@@ -544,12 +523,12 @@ class MainWindow(QMainWindow):
 
             if stats['ready_to_start']:
                 pause_since = time.time() - stats['last_blink_end']
-                char_prog = min(pause_since / config.CHAR_PAUSE, 1.0) * 100
-                word_prog = min(pause_since / config.WORD_PAUSE, 1.0) * 100
-                self.char_bar.setValue(int(char_prog))
+                min_time = max(pause_since-config.CHAR_PAUSE, 0.0)
+                if (pause_since > config.CHAR_PAUSE + config.WORD_PAUSE):
+                    min_time = 0
+                word_prog = min(min_time / config.WORD_PAUSE, 1.0) * 100
                 self.word_bar.setValue(int(word_prog))
             else:
-                self.char_bar.setValue(0)
                 self.word_bar.setValue(0)
 
 

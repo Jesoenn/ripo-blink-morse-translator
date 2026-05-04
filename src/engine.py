@@ -1,3 +1,4 @@
+import threading
 import time
 import config
 from morse_data import MorseTranslator
@@ -95,32 +96,36 @@ class MorseEngine:
             if not self.ready_to_start and self.stable_frames >= config.FACE_STABLE_FRAMES:
                 self.ready_to_start = True
 
-        # If one eye is always very low/high, assume it's not visible -> use only other eye
-        # Mark eye as "not available" if EAR stays in extreme range
-        left_available = 0.05 < self.average_left_ear < 1.5
-        right_available = 0.05 < self.average_right_ear < 1.5
+        # NIE DZIAŁA
+        # # If one eye is always very low/high, assume it's not visible -> use only other eye
+        # # Mark eye as "not available" if EAR stays in extreme range
+        # left_available = 0.05 < self.average_left_ear < 1.5
+        # right_available = 0.05 < self.average_right_ear < 1.5
         
-        # Determine which eyes are closed using close threshold
-        if left_available and right_available:
-            left_closed = self.average_left_ear < config.BLINK_CLOSE_THRESHOLD
-            right_closed = self.average_right_ear < config.BLINK_CLOSE_THRESHOLD
-            eyes_closed_raw = left_closed and right_closed
-        elif left_available:
-            eyes_closed_raw = self.average_left_ear < config.BLINK_CLOSE_THRESHOLD
-        elif right_available:
-            eyes_closed_raw = self.average_right_ear < config.BLINK_CLOSE_THRESHOLD
-        else:
-            eyes_closed_raw = False
-        
+        # # Determine which eyes are closed using close threshold
+        # if left_available and right_available:
+        #     left_closed = self.average_left_ear < config.BLINK_CLOSE_THRESHOLD
+        #     right_closed = self.average_right_ear < config.BLINK_CLOSE_THRESHOLD
+        #     eyes_closed_raw = left_closed and right_closed
+        # elif left_available:
+        #     eyes_closed_raw = self.average_left_ear < config.BLINK_CLOSE_THRESHOLD
+        # elif right_available:
+        #     eyes_closed_raw = self.average_right_ear < config.BLINK_CLOSE_THRESHOLD
+        # else:
+        #     eyes_closed_raw = False
+
+        left_closed = self.average_left_ear < config.BLINK_CLOSE_THRESHOLD
+        right_closed = self.average_right_ear < config.BLINK_CLOSE_THRESHOLD
+        eyes_closed_raw = left_closed and right_closed
+
         # Apply hysteresis to prevent bouncing between closed and open
-        # Use CURRENT (not average) EAR for hysteresis to react quickly to real eye opening
         if not self.eye_open_hysteresis:
             # Currently in CLOSED state - require higher threshold to open
             eyes_are_opening = False
-            if left_available and self.current_left_ear > config.BLINK_OPEN_THRESHOLD:
+            if self.current_left_ear > config.BLINK_OPEN_THRESHOLD:
                 eyes_are_opening = True
                 # print(f"[DEBUG] Left eye opening: EAR={self.current_left_ear:.2f} > {config.BLINK_OPEN_THRESHOLD}")
-            if right_available and self.current_right_ear > config.BLINK_OPEN_THRESHOLD:
+            if self.current_right_ear > config.BLINK_OPEN_THRESHOLD:
                 eyes_are_opening = True
                 # print(f"[DEBUG] Right eye opening: EAR={self.current_right_ear:.2f} > {config.BLINK_OPEN_THRESHOLD}")
             if eyes_are_opening:
@@ -156,9 +161,9 @@ class MorseEngine:
                     # ignore very long holds as unintended
                     pass
                 else:
-                    if blink_duration < config.DOT_MAX_TIME:
+                    if blink_duration <= config.DOT_MAX_TIME:
                         self.current_sequence += "."
-                    elif blink_duration >= config.DASH_MIN_TIME:
+                    else:
                         self.current_sequence += "-"
                 self.last_state_change = now
                 self.last_blink_end = now  # update last blink end time
@@ -169,7 +174,8 @@ class MorseEngine:
         # Ta logika powinna się zawsze wykonywać gdy oczy są otwarte i nie ruszamy się
         if not both_eyes_closed and self.ready_to_start and not self.pause_processed:
             pause_since_blink = now - self.last_blink_end
-            if pause_since_blink > config.WORD_PAUSE:
+            # word + char. Time starts after char finished
+            if pause_since_blink > config.WORD_PAUSE + config.CHAR_PAUSE:
                 # finalize character, insert space, and autocorrect last word
                 self.finalize_char()
                 if self.autocorrector:
@@ -178,17 +184,17 @@ class MorseEngine:
                     self.decoded_text += ' '
                 self.pause_processed = True
                 self.char_pause_processed = True
-                print(f"[Engine] WORD_PAUSE triggered after {pause_since_blink:.2f}s, text: '{self.decoded_text}'")
             elif pause_since_blink > config.CHAR_PAUSE and not self.char_pause_processed:
                 self.finalize_char()
                 self.char_pause_processed = True
-                print(f"[Engine] CHAR_PAUSE triggered after {pause_since_blink:.2f}s")
 
     def finalize_char(self):
         if self.current_sequence:
             decoded_char = MorseTranslator.translate(self.current_sequence)
             if decoded_char == "-":
                 self.decoded_text = self.decoded_text[:-1]  # Remove last symbol
+            elif decoded_char == " " and self.decoded_text[-1:] != " ":
+                self.decoded_text += " "
             elif decoded_char != "?":
                 self.decoded_text += decoded_char
             self.current_sequence = ""
@@ -207,12 +213,13 @@ class MorseEngine:
         else:
             prefix = self.decoded_text[:last_space_idx + 1]
             last_word = self.decoded_text[last_space_idx + 1:]
-        
-        # try to correct it
-        corrected = self.autocorrector.correct_text(last_word)
-        if corrected and corrected != last_word:
-            self.decoded_text = prefix + corrected
-            print(f"[Engine] Autocorrect: '{last_word}' -> '{corrected}'")
+
+        def run_correction(word_to_correct, text_prefix):
+            corrected = self.autocorrector.correct_text(word_to_correct)
+            if corrected and corrected != word_to_correct:
+                self.decoded_text = text_prefix + corrected
+
+        threading.Thread(target=run_correction, args=(last_word, prefix), daemon=True).start()
 
     def clear_text(self):
         self.decoded_text = ""
